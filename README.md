@@ -1,9 +1,11 @@
 # Rust + SDL2 + WASM example
 
-This is a very simple example of how to use Rust with SDL2 and WebAssembly. It uses `cargo web`, so make sure to install it before trying to compile this project.
-
-Run it with:
-
+### Instructions
+1. run these in shell
 ```sh
-RUST_BACKTRACE=1 cargo web start
+cargo build --release --target=wasm32-unknown-emscripten
+./setup_web.sh
+./run_web.sh
 ```
+2. go to browser `http://localhost:8000`
+

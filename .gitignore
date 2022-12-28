@@ -1,4 +1,2 @@
 /target
-**/*.rs.bk
-SDL2-2.0.9.zip
-SDL2-2.0.9/
+/temp_web
