@@ -1,1 +1,1 @@
-(cd temp_web && python -m http.server --bind ::)
+(cd dist && python -m http.server --bind ::)
