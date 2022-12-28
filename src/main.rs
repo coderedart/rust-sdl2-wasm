@@ -47,6 +47,12 @@ where
         });
     }
 }
+pub const LUA_CODE: &str = r#"
+lua_fn = function(click)
+    print("current color: "..click)
+end
+"#;
+
 fn main() {
     println!("Startup");
 
@@ -68,17 +74,47 @@ fn main() {
 
     let gl_context = window.gl_create_context().unwrap();
     window.gl_make_current(&gl_context).unwrap();
-    // gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const _);
 
     let gtx = unsafe {
-        glow::Context::from_loader_function(|symbol| video_subsystem.gl_get_proc_address(symbol) as _)
+        glow::Context::from_loader_function(|symbol| {
+            video_subsystem.gl_get_proc_address(symbol) as _
+        })
     };
+    let lua_vm = mlua::Lua::new();
 
+    lua_vm
+        .load(LUA_CODE)
+        .exec()
+        .expect("failed to execute lua code");
+
+    println!("setting loop callback");
+    let mut timer = sdl_context.timer().unwrap();
+    let mut event_pump = sdl_context.event_pump().unwrap();
+    event_pump.enable_event(sdl2::event::EventType::MouseButtonDown);
     set_main_loop_callback(move || {
         use glow::HasContext;
+        let milliseconds = timer.ticks();
+        // lets chagne color every 3 seconds
+        let elapsed = milliseconds % 3000;
+        let elapsed = elapsed as f32;
+        // clamp to 0.0-1.0
+        let color = elapsed / 3000.0;
         unsafe {
-            gtx.clear_color(0.3, 0.4, 0.9, 1.0);
+            gtx.clear_color(color, color, color, 1.0);
             gtx.clear(glow::COLOR_BUFFER_BIT);
+        }
+        while let Some(ev) = event_pump.poll_event() {
+            match ev {
+                sdl2::event::Event::MouseButtonDown { .. } => {
+                    lua_vm
+                        .globals()
+                        .get::<_, mlua::Function>("lua_fn")
+                        .expect("failed to get lua_fn function")
+                        .call::<f32, ()>(color)
+                        .expect("failed to call lua_fn function");
+                }
+                _ => {}
+            }
         }
         window.gl_swap_window();
     });
