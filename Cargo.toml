@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sdl2 = { version = "*" }
+sdl2 = { version = "*", features = ["raw-window-handle", "gfx", "ttf", ]}
 glow = { version = "*" }
 mlua = { version = "*", features = ["luau"] }
