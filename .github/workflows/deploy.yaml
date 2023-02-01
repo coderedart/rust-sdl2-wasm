@@ -19,7 +19,7 @@ jobs:
       - name: Rust Cache # cache the rust build artefacts
         uses: Swatinem/rust-cache@v1
       - name: Build # build
-        run: ./prepare_deploy.sh
+        run: ./build.sh
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:

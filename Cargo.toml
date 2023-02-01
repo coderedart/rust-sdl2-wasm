@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sdl2 = { version = "*", features = ["raw-window-handle", "gfx", "ttf", ]}
-glow = { version = "*" }
 mlua = { version = "*", features = ["luau"] }
+egui_render_glow = { git = "https://github.com/coderedart/etk.git" }
+egui_backend = { git = "https://github.com/coderedart/etk.git" }
+egui_window_sdl2 = { git = "https://github.com/coderedart/etk.git" }
+tracing-subscriber = "*"
