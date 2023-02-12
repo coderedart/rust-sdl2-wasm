@@ -5,7 +5,7 @@ use egui_window_sdl2::Sdl2Backend;
 use mlua::Lua;
 
 /// This is our userdata.
-struct UserAppData {
+struct UserAppData<WB: WindowBackend> {
     /// lua code that we can edit live and execute.
     code: String,
     /// well.. lua vm to execute the above code.
@@ -14,6 +14,7 @@ struct UserAppData {
     glow_backend: GlowBackend,
     /// egui context
     egui_context: egui_backend::egui::Context,
+    window_backend: WB
 }
 /// just some default lua code to show in text editor
 pub const LUA_CODE: &str = r#"
@@ -21,17 +22,17 @@ print('hello from lua');
 "#;
 
 // we care generic over the window backend. so, we can just decide at runtime which backend to use. eg: winit, glfw3, sdl2 are provided by `etk`
-impl<WB: egui_backend::WindowBackend> EguiUserApp<WB> for UserAppData {
+impl<WB: egui_backend::WindowBackend> EguiUserApp for UserAppData<WB> {
     // these are used by some default trait method implementations to abstract out the common parts like providing egui input or drawing egui output etc..
     type UserGfxBackend = GlowBackend;
-    fn get_gfx_backend(&mut self) -> &mut Self::UserGfxBackend {
-        &mut self.glow_backend
-    }
-    fn get_egui_context(&mut self) -> egui_backend::egui::Context {
-        self.egui_context.clone()
-    }
+    
     // the only function we care about. add whatever gui code you want.
-    fn gui_run(&mut self, egui_context: &egui_backend::egui::Context, _window_backend: &mut WB) {
+    fn gui_run(&mut self) {
+        let egui_context = self.egui_context.clone();
+        let input = egui_context.input(|i| i.clone());
+        Window::new("Input window").show(&egui_context, |ui| {
+            input.ui(ui);
+        });
         Window::new("hello window").show(&egui_context, |ui| {
             ui.code_editor(&mut self.code);
             if ui.button("run code").clicked() {
@@ -43,26 +44,60 @@ impl<WB: egui_backend::WindowBackend> EguiUserApp<WB> for UserAppData {
         // this tells sdl2 to immediately repaint after vsync. otherwise, it will sleep, waiting for events -> causing unresponsive browser tab.
         egui_context.request_repaint();
     }
+
+    type UserWindowBackend = WB;
+
+    fn get_all(
+        &mut self,
+    ) -> (
+        &mut Self::UserWindowBackend,
+        &mut Self::UserGfxBackend,
+        &egui_backend::egui::Context,
+    ) {
+        (&mut self.window_backend, &mut self.glow_backend, &self.egui_context)
+    }
 }
 fn main() {
     // init logging
-    tracing_subscriber::fmt().init();
+    use tracing_subscriber::prelude::*;
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+    // log_panics::init();
     // just create a new backend. ask sdl for an opengl window because we chose glow backend. on vulkan/dx/metal(desktop), we would choose non-gl window.
-    let mut sdl2_backend = Sdl2Backend::new(
-        Default::default(),
-        BackendConfig {
-            gfx_api_type: egui_backend::GfxApiType::GL,
+    let mut window_backend = Sdl2Backend::new(
+        egui_window_sdl2::SDL2Config {
+            window_creator_callback: Box::new(|vs| {
+                #[cfg(not(target_arch = "wasm32"))]
+                vs.gl_attr().set_context_major_version(3);
+                #[cfg(not(target_arch = "wasm32"))]
+                vs.gl_attr().set_context_minor_version(3);
+                let mut window_builder = vs.window("default title", 800, 600);
+                // use opengl on wasm
+                // #[cfg(target_arch = "wasm32")]
+                window_builder.opengl();
+                // #[cfg(not(target_arch = "wasm32"))]
+                // window_builder.vulkan();
+                window_builder.allow_highdpi();
+                window_builder.resizable();
+                window_builder.build().expect("failed to create a window")
+                // egui_window_sdl2::default_window_creator_callback(vs)
+            }),
         },
+        BackendConfig {},
     );
+    dbg!(window_backend.window.subsystem().display_dpi(0).unwrap());
     // create a opengl backend.
-    let glow_backend = GlowBackend::new(&mut sdl2_backend, Default::default());
+    let gfx_backend = GlowBackend::new(&mut window_backend, Default::default());
     // create our app data
     let app = UserAppData {
         code: LUA_CODE.to_string(),
         lua_vm: Lua::new(),
-        glow_backend,
+        glow_backend: gfx_backend,
         egui_context: Default::default(),
+        window_backend
     };
     // enter event loop and run forever :)
-    sdl2_backend.run_event_loop(app);
+    Sdl2Backend::run_event_loop(app);
 }

@@ -5,7 +5,12 @@ edition = "2021"
 
 [dependencies]
 mlua = { version = "*", features = ["luau"] }
-egui_render_glow = { git = "https://github.com/coderedart/etk.git" }
-egui_backend = { git = "https://github.com/coderedart/etk.git" }
-egui_window_sdl2 = { git = "https://github.com/coderedart/etk.git" }
-tracing-subscriber = "*"
+# egui_render_glow = { git = "https://github.com/coderedart/etk.git" }
+# egui_backend = { git = "https://github.com/coderedart/etk.git" }
+# egui_window_sdl2 = { git = "https://github.com/coderedart/etk.git" }
+
+egui_render_glow = { path = "../etk/crates/egui_render_glow" }
+# gui_render_wgpu = { path = "../etk/crates/egui_render_wgpu" }
+egui_backend = { path = "../etk/crates/egui_backend" }
+egui_window_sdl2 = { path = "../etk/crates/egui_window_sdl2" }
+tracing-subscriber = { version = "*", features = ["env-filter", "registry"] }
