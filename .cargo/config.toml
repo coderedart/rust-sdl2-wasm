@@ -31,10 +31,14 @@ rustflags = [
     "link-arg=-s",
     "-C",
     "link-arg=DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1", # i have no idea why i have this
-    "-C",
-    "link-arg=-s",
-    "-C",
-    "link-arg=MALLOC=none",                                     # seems to be needed after https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3136---041623
+    # "-C",
+    # "link-arg=-s",
+    # "-C",
+    # "link-arg=MALLOC=none",                                     # seems to be needed after https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3136---041623
+    # "-C",
+    # "link-arg=-s",
+    # "-C",
+    # "link-arg=ASSERTIONS=2",                                     # seems to be needed after https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3136---041623
 
     "-C",
     "link-arg=-s",
