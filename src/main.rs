@@ -1,8 +1,11 @@
 use egui_backend::egui::Window;
-use egui_backend::{BackendConfig, EguiUserApp, GfxBackend, WindowBackend};
-use egui_render_glow::GlowBackend;
+use egui_backend::{BackendConfig, GfxBackend, UserApp, WindowBackend};
+// use egui_render_glow::GlowBackend as GfxB;
+use egui_render_wgpu::WgpuBackend as GfxB;
+
 use egui_window_sdl2::Sdl2Backend;
 use mlua::Lua;
+use tracing_subscriber::filter::FilterExt;
 
 /// This is our userdata.
 struct UserAppData<WB: WindowBackend> {
@@ -11,10 +14,10 @@ struct UserAppData<WB: WindowBackend> {
     /// well.. lua vm to execute the above code.
     lua_vm: mlua::Lua,
     /// glow (rusty opengl wrapper) renderer to draw egui.. and other stuff with opengl. use three-d backend for high level features like gltf/meshes/materials/lighting etc..
-    glow_backend: GlowBackend,
+    gfx_backend: GfxB,
     /// egui context
     egui_context: egui_backend::egui::Context,
-    window_backend: WB
+    window_backend: WB,
 }
 /// just some default lua code to show in text editor
 pub const LUA_CODE: &str = r#"
@@ -22,10 +25,10 @@ print('hello from lua');
 "#;
 
 // we care generic over the window backend. so, we can just decide at runtime which backend to use. eg: winit, glfw3, sdl2 are provided by `etk`
-impl<WB: egui_backend::WindowBackend> EguiUserApp for UserAppData<WB> {
+impl<WB: egui_backend::WindowBackend> UserApp for UserAppData<WB> {
     // these are used by some default trait method implementations to abstract out the common parts like providing egui input or drawing egui output etc..
-    type UserGfxBackend = GlowBackend;
-    
+    type UserGfxBackend = GfxB;
+
     // the only function we care about. add whatever gui code you want.
     fn gui_run(&mut self) {
         let egui_context = self.egui_context.clone();
@@ -54,7 +57,11 @@ impl<WB: egui_backend::WindowBackend> EguiUserApp for UserAppData<WB> {
         &mut Self::UserGfxBackend,
         &egui_backend::egui::Context,
     ) {
-        (&mut self.window_backend, &mut self.glow_backend, &self.egui_context)
+        (
+            &mut self.window_backend,
+            &mut self.gfx_backend,
+            &self.egui_context,
+        )
     }
 }
 fn main() {
@@ -62,7 +69,11 @@ fn main() {
     use tracing_subscriber::prelude::*;
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
-        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .or_else(|_| tracing_subscriber::EnvFilter::try_new("info,wgpu=warn"))
+                .unwrap(),
+        )
         .init();
     // log_panics::init();
     // just create a new backend. ask sdl for an opengl window because we chose glow backend. on vulkan/dx/metal(desktop), we would choose non-gl window.
@@ -70,9 +81,10 @@ fn main() {
         egui_window_sdl2::SDL2Config {
             window_creator_callback: Box::new(|vs| {
                 #[cfg(not(target_arch = "wasm32"))]
-                vs.gl_attr().set_context_major_version(3);
-                #[cfg(not(target_arch = "wasm32"))]
-                vs.gl_attr().set_context_minor_version(3);
+                {
+                    vs.gl_attr().set_context_major_version(3);
+                    vs.gl_attr().set_context_minor_version(3);
+                }
                 let mut window_builder = vs.window("default title", 800, 600);
                 // use opengl on wasm
                 // #[cfg(target_arch = "wasm32")]
@@ -85,18 +97,18 @@ fn main() {
                 // egui_window_sdl2::default_window_creator_callback(vs)
             }),
         },
-        BackendConfig {},
+        Default::default(),
     );
-    dbg!(window_backend.window.subsystem().display_dpi(0).unwrap());
+
     // create a opengl backend.
-    let gfx_backend = GlowBackend::new(&mut window_backend, Default::default());
+    let gfx_backend = GfxB::new(&mut window_backend, Default::default());
     // create our app data
     let app = UserAppData {
         code: LUA_CODE.to_string(),
         lua_vm: Lua::new(),
-        glow_backend: gfx_backend,
+        gfx_backend,
         egui_context: Default::default(),
-        window_backend
+        window_backend,
     };
     // enter event loop and run forever :)
     Sdl2Backend::run_event_loop(app);
