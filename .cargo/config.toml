@@ -31,13 +31,13 @@ rustflags = [
     "link-arg=-s",
     "-C",
     "link-arg=DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1", # i have no idea why i have this
-    # "-C",
-    # "link-arg=-s",
-    # "-C",
-    # "link-arg=ASSERTIONS", # for debugging only
+    "-C",
+    "link-arg=-s",
+    "-C",
+    "link-arg=MALLOC=none",                                     # seems to be needed after https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3136---041623
 
     "-C",
     "link-arg=-s",
     "-C",
-    "link-arg=ERROR_ON_UNDEFINED_SYMBOLS=0", # for ignoring some egl symbols. maybe needed for wgpu 
+    "link-arg=ERROR_ON_UNDEFINED_SYMBOLS=0", # for ignoring some egl symbols. needed for wgpu 
 ]

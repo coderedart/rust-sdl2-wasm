@@ -271,6 +271,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_render_glow"
+version = "0.1.0"
+source = "git+https://github.com/coderedart/etk.git#c5ccb6ee1eea15beefe36d8763639744cc68b9c4"
+dependencies = [
+ "bytemuck",
+ "egui_backend",
+ "getrandom",
+ "glow 0.11.2",
+ "intmap",
+ "js-sys",
+ "tracing",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "egui_render_wgpu"
 version = "0.1.0"
 source = "git+https://github.com/coderedart/etk.git#c5ccb6ee1eea15beefe36d8763639744cc68b9c4"
@@ -351,8 +367,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c85e1d9ab2eadba7e5040d4e09cbd6d072b76a557ad64e797c2cb9d4da21d7e4"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "wasi",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -360,6 +378,18 @@ name = "gimli"
 version = "0.27.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad0a93d233ebf96623465aad4046a8d3aa4da22d4f4beba5388838c8a434bbb4"
+
+[[package]]
+name = "glow"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8bd5877156a19b8ac83a29b2306fe20537429d318f3ff0a1a2119f8d9c61919"
+dependencies = [
+ "js-sys",
+ "slotmap",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "glow"
@@ -824,6 +854,7 @@ name = "rust-sdl2-wasm"
 version = "0.1.0"
 dependencies = [
  "egui_backend",
+ "egui_render_glow",
  "egui_render_wgpu",
  "egui_window_sdl2",
  "mlua",
@@ -1209,7 +1240,7 @@ dependencies = [
  "d3d12",
  "foreign-types",
  "fxhash",
- "glow",
+ "glow 0.12.1",
  "gpu-alloc",
  "gpu-allocator",
  "gpu-descriptor",

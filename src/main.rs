@@ -1,11 +1,12 @@
 use egui_backend::egui::Window;
-use egui_backend::{BackendConfig, GfxBackend, UserApp, WindowBackend};
-// use egui_render_glow::GlowBackend as GfxB;
+use egui_backend::{GfxBackend, UserApp, WindowBackend};
+#[cfg(feature = "egui_render_glow")]
+use egui_render_glow::GlowBackend as GfxB;
+#[cfg(feature = "egui_render_wgpu")]
 use egui_render_wgpu::WgpuBackend as GfxB;
 
 use egui_window_sdl2::Sdl2Backend;
 use mlua::Lua;
-use tracing_subscriber::filter::FilterExt;
 
 /// This is our userdata.
 struct UserAppData<WB: WindowBackend> {
