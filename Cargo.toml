@@ -3,8 +3,8 @@ name = "rust-sdl2-wasm"
 version = "0.1.0"
 edition = "2021"
 [features]
-# default = ["egui_render_glow"]
-default = ["egui_render_wgpu"]
+default = ["egui_render_glow"]
+# default = ["egui_render_wgpu"]
 
 [dependencies]
 mlua = { version = "*", features = ["luau"] }
