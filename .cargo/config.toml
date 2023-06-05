@@ -6,11 +6,7 @@ rustflags = [
     "-C",
     "link-arg=-s",
     "-C",
-    "link-arg=USE_GLFW=3",
-    # "-C",
-    # "link-arg=-s",
-    # "-C",
-    # "link-arg=FULL_ES2",
+    "link-arg=FULL_ES2",
     "-C",
     "link-arg=-s",
     "-C",
@@ -30,18 +26,6 @@ rustflags = [
     "-C",
     "link-arg=-s",
     "-C",
-    "link-arg=DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1", # i have no idea why i have this
-    "-C",
-    "link-arg=-s",
-    "-C",
-    "link-arg=ASSERTIONS=2",                                    #for debug
-    "-C",
-    "link-arg=-s",
-    "-C",
-    "link-arg=ERROR_ON_UNDEFINED_SYMBOLS=0",                    # for ignoring some egl symbols. needed for wgpu 
+    "link-arg=ERROR_ON_UNDEFINED_SYMBOLS=0", # for ignoring some egl symbols. needed for wgpu 
 
-    "-C",
-    "link-arg=-s",
-    "-C",
-    "link-arg=EXPORTED_FUNCTIONS=_malloc", # https://github.com/emscripten-core/emscripten/issues/19234
 ]

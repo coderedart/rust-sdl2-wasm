@@ -10,3 +10,4 @@ live version deployed at https://coderedart.github.io/rust-sdl2-wasm/
 ```
 2. go to browser `http://127.0.0.1:8000/`
 
+For native, just use `cargo run --target=x86_64-unknown-linux-gnu` as usual for linux.
