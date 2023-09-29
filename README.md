@@ -1,3 +1,7 @@
+## Archived 
+There's already a similar (and simpler) project at https://github.com/coderedart/luaegui where i show glfw + egui + mlua (Luau) combination.
+
+
 # Rust + SDL2 + WASM + mlua example
 proof of concept that you can use rust + sdl2 + mlua on browser wasm together to enable scripting for rust based apps/games on browser.
 
